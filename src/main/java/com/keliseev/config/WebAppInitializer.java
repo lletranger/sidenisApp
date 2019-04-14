@@ -16,11 +16,11 @@ public class WebAppInitializer implements WebApplicationInitializer {
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
         AnnotationConfigWebApplicationContext ctx = new AnnotationConfigWebApplicationContext();
-        ctx.register(WebAppConfig.class);
+        ctx.setConfigLocation("com.keliseev.config");
         servletContext.addListener(new ContextLoaderListener(ctx));
         ctx.setServletContext(servletContext);
         ServletRegistration.Dynamic servlet = servletContext.addServlet(DISPATCHER_SERVLET_NAME, new DispatcherServlet(ctx));
-        servlet.addMapping("/");
         servlet.setLoadOnStartup(1);
+        servlet.addMapping("/");
     }
 }

@@ -1,16 +1,24 @@
 package com.keliseev.component;
 
+import com.keliseev.to.AccountTO;
 import com.keliseev.entity.Vault;
 import com.keliseev.exception.MyException;
+import com.keliseev.to.SendRequestTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 
 @RestController
 @RequestMapping(value = "/")
@@ -24,13 +32,13 @@ public class MyController {
         this.vault = vault;
     }
 
-    @RequestMapping(value = "/accounts", method = RequestMethod.GET)
+    @GetMapping(value = "/accounts")
     @ResponseBody
     public ResponseEntity getAllAccounts() {
         return ResponseEntity.status(HttpStatus.OK).body(vault.getAllAccounts());
     }
 
-    @RequestMapping(value = "/account/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/account/{id}")
     @ResponseBody
     public ResponseEntity getAccountInfo(@PathVariable @NotBlank Long id) {
         try {
@@ -40,17 +48,15 @@ public class MyController {
         }
     }
 
-    @RequestMapping(value = "/account/{name}:{amount}", method = RequestMethod.POST)
+    @PostMapping(value = "/account", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity createAccount(@PathVariable @NotBlank @Size(max = 25) String name,
-                                        @PathVariable @NotBlank @Min(0) Integer amount) {
-        return ResponseEntity.status(HttpStatus.OK).body(vault.createAccount(name, amount));
+    public ResponseEntity createAccount(@RequestBody AccountTO newAccount) {
+        return ResponseEntity.status(HttpStatus.OK).body(vault.createAccount(newAccount));
     }
 
-    @RequestMapping(value = "/account/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/account/{id}")
     @ResponseBody
     public ResponseEntity closeAccount(@PathVariable @NotBlank Long id) {
-
         try {
             return ResponseEntity.status(HttpStatus.OK).body(vault.closeAccount(id));
         } catch (MyException e) {
@@ -58,13 +64,11 @@ public class MyController {
         }
     }
 
-    @RequestMapping(value = "/transfer/{from}:{to}:{amount}", method = RequestMethod.POST)
+    @PostMapping(value = "/transfer", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity transfer(@PathVariable @NotBlank Long from,
-                                   @PathVariable @NotBlank Long to,
-                                   @PathVariable @NotBlank @Min(0) Integer amount) {
+    public ResponseEntity transfer(@RequestBody SendRequestTO requestTO) {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(vault.transfer(from, to, amount));
+            return ResponseEntity.status(HttpStatus.OK).body(vault.transfer(requestTO.getFrom(), requestTO.getTo(), requestTO.getAmount()));
         } catch (MyException e) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(e.getMessage());
         }

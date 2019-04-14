@@ -1,8 +1,10 @@
 package com.keliseev.entity;
 
 import com.keliseev.exception.MyException;
+import com.keliseev.to.AccountTO;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,8 +34,8 @@ public class Vault {
         return MAP.get(id);
     }
 
-    public Account createAccount(String name, Integer amount) {
-        Account account = new Account(name, amount);
+    public Account createAccount(AccountTO dto) {
+        Account account = new Account(dto.getName(), dto.getAmount());
         MAP.put(account.getId(), account);
         return account;
     }
@@ -47,7 +49,8 @@ public class Vault {
     }
 
 
-    public List<Account> transfer(Long from, Long to, Integer amount) throws MyException {
+    public List<Account> transfer(Long from, Long to, Integer amount) throws MyException
+    {
 
         if (!(MAP.containsKey(from) && MAP.containsKey(to))) {
             throw new MyException("One of the accounts doesn't exist: " + from + " or " + to);
@@ -61,6 +64,9 @@ public class Vault {
         }
 
         donor.donate(recipient, amount);
+        List<Account> result = new ArrayList<>();
+        result.add(donor);
+        result.add(recipient);
         return List.of(donor, recipient);
     }
 }
